@@ -21,4 +21,6 @@ int RatioPlotsBandMC( TH1F*, TH1F*, TString, TString, TString, TString, int nbin
 int BandMC_TGraph(TGraphAsymmErrors*, TH1F*, TString, TString, TString, TString, int, float*, int);
 int RatioPlotsV3(THStack*, TH1F*, TH1F*, TString, TString, TString, TString, int, float*, TLegend*, TString);
 int RatioPlotSignal(THStack*, TH1F*, TH1F*, TString, TString, TString, TString, int, float*, TLegend*, TString, TH1F*);
+int RatioPlotSignal(THStack*, TH1F*, TH1F*, TString, TString, TString, TString, int, float*, TLegend*, TString, TH1F*, TH1F*);
+
 #endif

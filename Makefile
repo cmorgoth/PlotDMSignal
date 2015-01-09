@@ -11,9 +11,9 @@ LDFLAGS := $(shell root-config --glibs) $(STDLIBDIR)
 
 CPPFLAGS += -g
 
-TARGET = StackPlots
+TARGET = CreateSignalStackPlots
 
-SRC = main/StackPlots_AfterPrediction.cc src/hlt.cc src/DM_1DRatio.cc
+SRC = main/SignalStackPlotsCategories.cc src/hlt.cc src/DM_1DRatio.cc
 
 OBJ = $(SRC:.cc=.o)
 

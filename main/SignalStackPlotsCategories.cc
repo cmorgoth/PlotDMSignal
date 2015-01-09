@@ -1,27 +1,31 @@
 /*
-Generates the input for combine-tool limit setting code
-including data card and the root file with the histograms
-for the systematics, signal is scale to the correct LUMI
-and includes the ISR, PDF, JES systematic, as well as the
-PU re-weighting, and the HLT weight for the turn-on curve
+Creates Signal and Background Stack Plots
+For DM analysis. These plots are use to show
+the contribution of different backgrounds and also
+how the signal look like in the different MR categories
 */
+//C++ INCLUDES
 #include <iostream>
-#include "math.h"
+#include <fstream>
+#include <math.h>
+#include <vector>
+#include <map>
+//ROOT INCLUDES
 #include "TROOT.h"
 #include "TH1F.h"
 #include "TH2F.h"
 #include "TFile.h"
 #include "TTree.h"
 #include "TString.h"
-#include "hlt.hh"
-#include "DM_1DRatio.hh"
 #include "THStack.h"
 #include "TLegend.h"
-#include <fstream>
 #include "TEfficiency.h"
 #include "TCanvas.h"
 #include "TLorentzVector.h"
-#include <vector>
+//LOCAL INCLUDES
+#include "hlt.hh"
+#include "DM_1DRatio.hh"
+#include "StructDefinition.hh"
 
 const float BaseDM::RSQ_BinArr[] = {0.5, 0.6, 0.725, 0.85, 2.50};
 const float BaseDM::MR_BinArr[] = {200., 300., 400., 600., 3500.};
@@ -29,8 +33,6 @@ const float BaseDM::MR_BinArr[] = {200., 300., 400., 600., 3500.};
 int main(){
 
   //gROOT->Reset();
-
-
   const int r2B[4] = {11, 6, 6, 4};
   float c1B[] = {0.50, 0.55, 0.60, 0.65, 0.70, 0.75, 0.80, 0.85, 0.9, 0.95, 1.0, 1.2};
   float c2B[] = {0.50, 0.575, 0.65, 0.75, 0.85, .950, 1.2};
@@ -43,7 +45,7 @@ int main(){
   v.push_back(c4B);
   
   TCanvas* ca = new TCanvas("c","c", 640, 640);
-  TFile* f2 = new TFile("trigger/hlt_eff_HTMHT_0mu_BOX_0bTag_Final.root");
+  TFile* f2 = new TFile("~/Software/git/BkgPredictionDM/trigger/hlt_eff_HTMHT_0mu_BOX_0bTag_Final.root");
   TEfficiency* hlt = (TEfficiency*)f2->Get("Eff2d");
 
   TH1F* dy[4];
@@ -59,11 +61,7 @@ int main(){
   double z_N[4];//Total contribution #
   double w_N[4];//Total contribution #
   double data_N[4];//Total contribution #
-  //TFile* in = new TFile("/Users/cmorgoth/Software/git/BkgPredictionDM/Pred_Files/MR_Cat_PredV2.root");
-  //TFile* in = new TFile("/Users/cmorgoth/Software/git/BkgPredictionDM/Pred_Files/MR_Cat_PredV2_Nominal.root");
-  //TFile* in = new TFile("/Users/cmorgoth/Software/git/BkgPredictionDM/Pred_Files/MR_Cat_PredV2_ISR_Off.root");
-  
-  //TFile* in = new TFile("/Users/cmorgoth/Software/git/BkgPredictionDM/PredFilesFinal/MR_Cat_PredV2_NEW_kF.root");
+
   TFile* in = new TFile("/Users/cmorgoth/Software/git/BkgPredictionDM/PredFilesAN/MR_Cat_PredV2_NEW_kF.root");
   
   for(int i = 0; i < 4; i++){
@@ -168,7 +166,7 @@ int main(){
   TH1F* s_up[24][4];
   TH1F* s_down[24][4];
 
-  
+  std::map<std::string, DmSignalPlots> DmSignalMap;
   TString sn;
   for(int j = 0; j < 24; j++){
     for(int i = 0; i < 4; i++){
@@ -181,9 +179,6 @@ int main(){
       h_rsq_JES_up[j][i] = new TH1F(sn+"JES_up", sn+"JES_up", r2B[i], v.at(i));
       h_rsq_JES_down[j][i] = new TH1F(sn+"JES_down", sn+"JES_down", r2B[i], v.at(i));
       
-      //h_rsq_PDF_up[j][i] = new TH1F(sn+"PDF_up", sn+"PDF_up", r2B[i], v.at(i));
-      //h_rsq_PDF_down[j][i] = new TH1F(sn+"PDF_down", sn+"PDF_down", r2B[i], v.at(i));
-      
       s_up[j][i] = new TH1F(sn+"_up", sn+"_up", r2B[i], v.at(i));
       s_down[j][i] = new TH1F(sn+"_down", sn+"_down", r2B[i], v.at(i));
     }
@@ -191,8 +186,6 @@ int main(){
 
   //Here the program starts
   
-  //std::ifstream mfile0("list_of_files_v2.list");
-  //std::ifstream mfile0("list_DM_BIS.list");
   std::ifstream mfile0("list_DM_BugFixed.list");
   
   std::string fname0;
@@ -211,7 +204,25 @@ int main(){
       
       std::string dm_sample = fname0.substr(low_,high_);
       std::cout << "============ " << dm_sample << " ==================" << std::endl;
-            
+      int low_type;
+      int high_type;
+      if(fname0.find("AV") != std::string::npos){
+	low_ = fname0.find("DMm") + 3;
+	high_ = fname0.rfind("AV") - low_;
+	low_type = fname0.rfind("AV");
+	high_type = fname0.find("_testMC_0.root") - low_type;
+      }else{
+	low_ = fname0.find("DMm") + 3;
+	high_ = fname0.rfind("V") - low_;
+	low_type = fname0.rfind("V");
+	high_type = fname0.find("_testMC_0.root") - low_type;
+      }
+      std::string dm_mass = fname0.substr(low_,high_);
+      std::string current_type = fname0.substr(low_type,high_type);
+      std::cout << "============ " << dm_mass << " ==================" << std::endl;
+      std::cout << "============ " << current_type << " ==================" << std::endl;
+
+      
       TFile* f = new TFile(fname0.c_str());
       TTree* eff = (TTree*)f->Get("effTree");
       TTree* out = (TTree*)f->Get("outTree");
@@ -528,6 +539,54 @@ int main(){
 	}
       }
       
+      if(DmSignalMap.find(dm_mass) != DmSignalMap.end()){
+	
+	if(current_type.compare("AVu") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].AVu[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+	else if(current_type.compare("AVd") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].AVd[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+	else if(current_type.compare("Vu") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].Vu[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+	else if(current_type.compare("Vd") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].Vd[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+	
+      }
+      else{
+	DmSignalPlots aux;
+	DmSignalMap[dm_mass] = aux;
+	if(current_type.compare("AVu") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].AVu[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+	else if(current_type.compare("AVd") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].AVd[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+	else if(current_type.compare("Vu") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].Vu[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+	else if(current_type.compare("Vd") == 0){
+	  for(int icat = 0; icat < 4; icat++){
+	    DmSignalMap[dm_mass].Vd[icat] =  new TH1F(*h_rsq[xs_counter][icat]);
+	  }
+	}
+      }
       
       xs_counter++;
       delete out;
@@ -540,6 +599,9 @@ int main(){
   mfile0.close();
   
   TLegend* leg;
+  TLegend* leg1;
+  TLegend* leg2;
+  TLegend* leg3;
   THStack* stack1 = new THStack("stack1", "");
 
   TH1F* dy_v1[4];
@@ -602,79 +664,299 @@ int main(){
 
   }
   
-  for(int k = 0; k < 4; k++){
-    stack1 = new THStack("stack1", "");
+  //Up and Down Comparison
+  for( auto tmp : DmSignalMap){
+    std::cout << "MASS: " << tmp.first << std::endl;
+    for(int k = 0; k < 4; k++){
+      stack1 = new THStack("stack1", "");
+      
+      data_v1[k]->SetMarkerStyle(20);
+      data_v1[k]->SetLineColor(1);
+      data_v1[k]->SetMarkerSize(1.5);
+    
+      tt_v1[k]->SetFillColor(kPink+9);
+      dy_v1[k]->SetFillColor(kViolet+9);
+      z_v1[k]->SetFillColor(kYellow-4);
+      w_v1[k]->SetFillColor(kSpring+4);
+      
+      //AVu
+      //tmp.second.AVu[k]->SetLineColor(kBlue-3);
+      tmp.second.AVu[k]->SetLineColor(kBlack);
+      tmp.second.AVu[k]->SetLineWidth(3);
+      tmp.second.AVu[k]->SetLineStyle(2);
+      //AVd
+      //tmp.second.AVd[k]->SetLineColor(kGreen-6);
+      tmp.second.AVd[k]->SetLineColor(kBlack);
+      tmp.second.AVd[k]->SetLineWidth(3);
+      tmp.second.AVd[k]->SetLineStyle(9);
 
-    data_v1[k]->SetMarkerStyle(20);
-    data_v1[k]->SetLineColor(1);
-    data_v1[k]->SetMarkerSize(1.5);
+      //Vu
+      //tmp.second.Vu[k]->SetLineColor(kBlue-3);
+      tmp.second.Vu[k]->SetLineColor(kBlack);
+      tmp.second.Vu[k]->SetLineWidth(3);
+      tmp.second.Vu[k]->SetLineStyle(2);
+      //Vd
+      //tmp.second.Vd[k]->SetLineColor(kGreen-6);
+      tmp.second.Vd[k]->SetLineColor(kBlack);
+      tmp.second.Vd[k]->SetLineWidth(3);
+      tmp.second.Vd[k]->SetLineStyle(9);
+      
+
+      //AV legend
+      TString lstr1 = tmp.first.c_str();
+      lstr1 = "AVu-DM m = " + lstr1 + " GeV";
+      TString lstr2 = tmp.first.c_str();
+      lstr2 = "AVd-DM m = " + lstr2 + " GeV";
+      leg = new TLegend(0.65,0.7,0.89,0.92);
+      leg->AddEntry(w_v1[k],"W + jets","f");
+      leg->AddEntry(z_v1[k],"Z(#nu#bar{#nu}) + jets","f");
+      leg->AddEntry(tt_v1[k],"t #bar{t} + jets","f");
+      leg->AddEntry(dy_v1[k],"Z/#gamma^{*}(ll) + jets","f");
+      leg->AddEntry(data_v1[k],"Data","lep");
+      leg->AddEntry(tmp.second.AVu[k], lstr1, "l");
+      leg->AddEntry(tmp.second.AVd[k], lstr2, "l");
+
+      //V legend
+      lstr1 = tmp.first.c_str();
+      lstr1 = "Vu-DM m = " + lstr1 + " GeV";
+      lstr2 = tmp.first.c_str();
+      lstr2 = "Vd-DM m = " + lstr2 + " GeV";
+      leg1 = new TLegend(0.65,0.7,0.89,0.92);
+      leg1->AddEntry(w_v1[k],"W + jets","f");
+      leg1->AddEntry(z_v1[k],"Z(#nu#bar{#nu}) + jets","f");
+      leg1->AddEntry(tt_v1[k],"t #bar{t} + jets","f");
+      leg1->AddEntry(dy_v1[k],"Z/#gamma^{*}(ll) + jets","f");
+      leg1->AddEntry(data_v1[k],"Data","lep");
+      leg1->AddEntry(tmp.second.Vu[k], lstr1, "l");
+      leg1->AddEntry(tmp.second.Vd[k], lstr2, "l");
+
+      w_v1[k]->SetTitle("");
+      w_v1[k]->SetStats(0);
+      tt_v1[k]->SetTitle("");
+      tt_v1[k]->SetStats(0);
+      dy_v1[k]->SetTitle("");
+      dy_v1[k]->SetStats(0);
+      z_v1[k]->SetTitle("");
+      z_v1[k]->SetStats(0);
+      data_v1[k]->SetTitle("");
+      data_v1[k]->SetStats(0);
     
-    tt_v1[k]->SetFillColor(kPink+9);
-    dy_v1[k]->SetFillColor(kViolet+9);
-    z_v1[k]->SetFillColor(kYellow-4);
-    w_v1[k]->SetFillColor(kSpring+4);
-    
-    h_rsq[14][k]->SetLineColor(kBlue-3);
-    h_rsq[14][k]->SetLineWidth(3);
-    h_rsq[14][k]->SetLineStyle(2);
-    
-    leg = new TLegend(0.65,0.7,0.89,0.92);
-    leg->AddEntry(w_v1[k],"W + jets","f");
-    leg->AddEntry(z_v1[k],"Z(#nu#bar{#nu}) + jets","f");
-    leg->AddEntry(tt_v1[k],"t #bar{t} + jets","f");
-    leg->AddEntry(dy_v1[k],"Z/#gamma^{*}(ll) + jets","f");
-    leg->AddEntry(data_v1[k],"Data","lep");
-    leg->AddEntry(h_rsq[3][k]," Vu-DM m = 1 TeV","l");
-    
-    //leg->SetHeader("R^{2} Signal Region");
-    
-    w_v1[k]->SetTitle("");
-    w_v1[k]->SetStats(0);
-    tt_v1[k]->SetTitle("");
-    tt_v1[k]->SetStats(0);
-    dy_v1[k]->SetTitle("");
-    dy_v1[k]->SetStats(0);
-    z_v1[k]->SetTitle("");
-    z_v1[k]->SetStats(0);
-    data_v1[k]->SetTitle("");
-    data_v1[k]->SetStats(0);
-    
-    stack1->Add(dy_v1[k]);//DY
-    stack1->Add(tt_v1[k]);//TTbar
-    stack1->Add(z_v1[k]);//Wjets
-    stack1->Add(w_v1[k]);//ZJets
-    
-    stack1->Draw();
-    ( (TAxis*)( stack1->GetXaxis() ) )->SetTitle("R^{2}");
-    stack1->Draw();
-    data_v1[k]->Draw("same");
+      stack1->Add(dy_v1[k]);//DY
+      stack1->Add(tt_v1[k]);//TTbar
+      stack1->Add(z_v1[k]);//Wjets
+      stack1->Add(w_v1[k]);//ZJets
+      
+      
+      stack1->Draw();
+      ( (TAxis*)( stack1->GetXaxis() ) )->SetTitle("R^{2}");
+      stack1->Draw();
+      data_v1[k]->Draw("same");
   
-    TH1F* aux2 = new TH1F( *dy_v2[k] );
-    aux2->Sumw2();
-    aux2->Add(tt_v2[k], 1);
-    aux2->Add(z_v2[k], 1);
-    aux2->Add(w_v2[k], 1);
-    for(int j = 1; j <= r2B[k]; j++){
-      std::cout << "b_err: " << aux2->GetBinError(j) << std::endl;
-      std::cout << "Data b_err: " << data_v1[k]->GetBinError(j) << std::endl;
-    }
-    TString s = TString(Form("Data_MC_cat%d",k+1));
-    TString y_axis;
-    if(k == 0){
-      y_axis = "Events/0.05";
-    }else if(k ==3){
-      y_axis = "Events/0.1";
-    }else{
-      y_axis = "Events/0.075";
-    }
+      TH1F* aux2 = new TH1F( *dy_v2[k] );
+      aux2->Sumw2();
+      aux2->Add(tt_v2[k], 1);
+      aux2->Add(z_v2[k], 1);
+      aux2->Add(w_v2[k], 1);
+      TString DM_mass = tmp.first.c_str();
+      TString s = TString(Form("SignalStackPlots/Data_MC_cat%d",k+1));
+      s = s + "_" + DM_mass;
+      TString y_axis;
+      if(k == 0){
+	y_axis = "Events";
+      }else if(k ==3){
+	y_axis = "Events";
+      }else{
+	y_axis = "Events";
+      }
     
-    
-    RatioPlotsV3(stack1, data_v1[k], aux2, "MC 0 #mu BOX", "Data 0 #mu BOX", s, "RSQ", r2B[k],  v.at(k),leg, y_axis);
-    RatioPlotSignal(stack1, data_v1[k], aux2, "MC 0 #mu BOX", "Data 0 #mu BOX", s+"_signal_Vu_1TeV", "RSQ", r2B[k],  v.at(k),leg, y_axis, h_rsq[3][k]);
-    delete leg;
-    delete aux2;
-    delete stack1;
+      
+      RatioPlotsV3(stack1, data_v1[k], aux2, "MC 0 #mu BOX", "Data 0 #mu BOX", s, "RSQ", r2B[k],  v.at(k),leg, y_axis);
+      RatioPlotSignal(stack1, data_v1[k], aux2, "MC 0 #mu BOX", "Data 0 #mu BOX", s+"_signal_Vu", "RSQ", r2B[k],  v.at(k),leg, y_axis, tmp.second.AVu[k]);
+      RatioPlotSignal(stack1, data_v1[k], aux2, "MC 0 #mu BOX", "Data 0 #mu BOX", s+"_DoubleSignal_AV", "RSQ", r2B[k],  v.at(k),leg, y_axis, 
+		      tmp.second.AVu[k], tmp.second.AVd[k]);
+      RatioPlotSignal(stack1, data_v1[k], aux2, "MC 0 #mu BOX", "Data 0 #mu BOX", s+"_DoubleSignal_V", "RSQ", r2B[k],  v.at(k),leg, y_axis, 
+		      tmp.second.Vu[k], tmp.second.Vd[k]);
+      
+      delete leg, leg1, aux2;
+      
+    }
   }
+  
+  //Mass Comparison
+  const int nmasses = 6;
+  std::string mDM[nmasses] = {"1", "10", "100", "400", "700" , "1000"};
+  for(int i = 0; i < nmasses; i++){
+    for(int j = i+1; j < nmasses; j++){
+      for(int k = 0; k < 4; k++){
+	stack1 = new THStack("stack1", "");
+	
+	data_v1[k]->SetMarkerStyle(20);
+	data_v1[k]->SetLineColor(1);
+	data_v1[k]->SetMarkerSize(1.5);
+	
+	tt_v1[k]->SetFillColor(kPink+9);
+	dy_v1[k]->SetFillColor(kViolet+9);
+	z_v1[k]->SetFillColor(kYellow-4);
+	w_v1[k]->SetFillColor(kSpring+4);
+	//MASS1
+	//Mass 1 AVu
+	//DmSignalMap[mDM[i]].AVu[k]->SetLineColor(kBlue-3);
+	DmSignalMap[mDM[i]].AVu[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[i]].AVu[k]->SetLineWidth(3);
+	DmSignalMap[mDM[i]].AVu[k]->SetLineStyle(2);
+	//Mass 1 AVd
+	//DmSignalMap[mDM[i]].AVd[k]->SetLineColor(kBlue-3);
+	DmSignalMap[mDM[i]].AVd[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[i]].AVd[k]->SetLineWidth(3);
+	DmSignalMap[mDM[i]].AVd[k]->SetLineStyle(2);
+	//Mass 1 Vu
+	//DmSignalMap[mDM[i]].Vu[k]->SetLineColor(kBlue-3);
+	DmSignalMap[mDM[i]].Vu[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[i]].Vu[k]->SetLineWidth(3);
+	DmSignalMap[mDM[i]].Vu[k]->SetLineStyle(2);
+	//Mass 1 Vd
+	//DmSignalMap[mDM[i]].Vd[k]->SetLineColor(kBlue-3);
+	DmSignalMap[mDM[i]].Vd[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[i]].Vd[k]->SetLineWidth(3);
+	DmSignalMap[mDM[i]].Vd[k]->SetLineStyle(2);
+	
+	//MASS2
+	//Mass 2 AVu
+	//DmSignalMap[mDM[j]].AVu[k]->SetLineColor(kGreen-6);
+	DmSignalMap[mDM[j]].AVu[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[j]].AVu[k]->SetLineWidth(3);
+	DmSignalMap[mDM[j]].AVu[k]->SetLineStyle(9);
+	//Mass 2 AVd
+	//DmSignalMap[mDM[j]].AVd[k]->SetLineColor(kGreen-6);
+	DmSignalMap[mDM[j]].AVd[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[j]].AVd[k]->SetLineWidth(3);
+	DmSignalMap[mDM[j]].AVd[k]->SetLineStyle(9);
+	//Mass 2 Vu
+	//DmSignalMap[mDM[j]].Vu[k]->SetLineColor(kGreen-6);
+	DmSignalMap[mDM[j]].Vu[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[j]].Vu[k]->SetLineWidth(3);
+	DmSignalMap[mDM[j]].Vu[k]->SetLineStyle(9);
+	//Mass 2 Vd
+	//DmSignalMap[mDM[j]].Vd[k]->SetLineColor(kGreen-6);
+	DmSignalMap[mDM[j]].Vd[k]->SetLineColor(kBlack);
+	DmSignalMap[mDM[j]].Vd[k]->SetLineWidth(3);
+	DmSignalMap[mDM[j]].Vd[k]->SetLineStyle(9);
+      
+	
+	//AVu legend
+	TString lstr1 = mDM[i];
+	lstr1 = "AVu-DM m = " + lstr1 + " GeV";
+	TString lstr2 = mDM[j];
+	lstr2 = "AVu-DM m = " + lstr2 + " GeV";
+	leg = new TLegend(0.65,0.7,0.89,0.92);
+	leg->AddEntry(w_v1[k],"W + jets","f");
+	leg->AddEntry(z_v1[k],"Z(#nu#bar{#nu}) + jets","f");
+	leg->AddEntry(tt_v1[k],"t #bar{t} + jets","f");
+	leg->AddEntry(dy_v1[k],"Z/#gamma^{*}(ll) + jets","f");
+	leg->AddEntry(data_v1[k],"Data","lep");
+	leg->AddEntry(DmSignalMap[mDM[i]].AVu[k], lstr1, "l");
+	leg->AddEntry(DmSignalMap[mDM[j]].AVu[k], lstr2, "l");
+	//AVd legend
+	lstr1 = mDM[i];
+	lstr1 = "AVd-DM m = " + lstr1 + " GeV";
+	lstr2 = mDM[j];
+	lstr2 = "AVd-DM m = " + lstr2 + " GeV";
+	leg1 = new TLegend(0.65,0.7,0.89,0.92);
+	leg1->AddEntry(w_v1[k],"W + jets","f");
+	leg1->AddEntry(z_v1[k],"Z(#nu#bar{#nu}) + jets","f");
+	leg1->AddEntry(tt_v1[k],"t #bar{t} + jets","f");
+	leg1->AddEntry(dy_v1[k],"Z/#gamma^{*}(ll) + jets","f");
+	leg1->AddEntry(data_v1[k],"Data","lep");
+	leg1->AddEntry(DmSignalMap[mDM[i]].AVd[k], lstr1, "l");
+	leg1->AddEntry(DmSignalMap[mDM[j]].AVd[k], lstr2, "l");
+	//Vu legend
+	lstr1 = mDM[i];
+	lstr1 = "Vu-DM m = " + lstr1 + " GeV";
+	lstr2 = mDM[j];
+	lstr2 = "Vu-DM m = " + lstr2 + " GeV";
+	leg2 = new TLegend(0.65,0.7,0.89,0.92);
+	leg2->AddEntry(w_v1[k],"W + jets","f");
+	leg2->AddEntry(z_v1[k],"Z(#nu#bar{#nu}) + jets","f");
+	leg2->AddEntry(tt_v1[k],"t #bar{t} + jets","f");
+	leg2->AddEntry(dy_v1[k],"Z/#gamma^{*}(ll) + jets","f");
+	leg2->AddEntry(data_v1[k],"Data","lep");
+	leg2->AddEntry(DmSignalMap[mDM[i]].Vu[k], lstr1, "l");
+	leg2->AddEntry(DmSignalMap[mDM[j]].Vu[k], lstr2, "l");
+	//Vd legend
+	lstr1 = mDM[i];
+	lstr1 = "Vd-DM m = " + lstr1 + " GeV";
+	lstr2 = mDM[j];
+	lstr2 = "Vd-DM m = " + lstr2 + " GeV";
+	leg3 = new TLegend(0.65,0.7,0.89,0.92);
+	leg3->AddEntry(w_v1[k],"W + jets","f");
+	leg3->AddEntry(z_v1[k],"Z(#nu#bar{#nu}) + jets","f");
+	leg3->AddEntry(tt_v1[k],"t #bar{t} + jets","f");
+	leg3->AddEntry(dy_v1[k],"Z/#gamma^{*}(ll) + jets","f");
+	leg3->AddEntry(data_v1[k],"Data","lep");
+	leg3->AddEntry(DmSignalMap[mDM[i]].Vd[k], lstr1, "l");
+	leg3->AddEntry(DmSignalMap[mDM[j]].Vd[k], lstr2, "l");
+	
+	//COSMETICS
+	w_v1[k]->SetTitle("");
+	w_v1[k]->SetStats(0);
+	tt_v1[k]->SetTitle("");
+	tt_v1[k]->SetStats(0);
+	dy_v1[k]->SetTitle("");
+	dy_v1[k]->SetStats(0);
+	z_v1[k]->SetTitle("");
+	z_v1[k]->SetStats(0);
+	data_v1[k]->SetTitle("");
+	data_v1[k]->SetStats(0);
     
+	stack1->Add(dy_v1[k]);//DY
+	stack1->Add(tt_v1[k]);//TTbar
+	stack1->Add(z_v1[k]);//Wjets
+	stack1->Add(w_v1[k]);//ZJets
+	
+      
+	stack1->Draw();
+	( (TAxis*)( stack1->GetXaxis() ) )->SetTitle("R^{2}");
+	stack1->Draw();
+	data_v1[k]->Draw("same");
+	
+	TH1F* aux2 = new TH1F( *dy_v2[k] );
+	aux2->Sumw2();
+	aux2->Add(tt_v2[k], 1);
+	aux2->Add(z_v2[k], 1);
+	aux2->Add(w_v2[k], 1);
+	TString s = TString(Form("SignalStackPlots/Data_MC_cat%d",k+1));
+	s = s + "_m1_" + mDM[i].c_str() + "_m2_" + mDM[j].c_str() ;
+	TString y_axis;
+	if(k == 0){
+	  y_axis = "Events";
+	}else if(k ==3){
+	  y_axis = "Events";
+	}else{
+	  y_axis = "Events";
+	}
+	
+	RatioPlotSignal(stack1, data_v1[k], aux2,
+			"MC 0 #mu BOX", "Data 0 #mu BOX", s+"_DoubleSignalMass_AVu", "RSQ", 
+			r2B[k],  v.at(k),leg, y_axis, 
+			DmSignalMap[mDM[i]].AVu[k], DmSignalMap[mDM[j]].AVu[k]);
+	RatioPlotSignal(stack1, data_v1[k], aux2,
+			"MC 0 #mu BOX", "Data 0 #mu BOX", s+"_DoubleSignalMass_AVd", "RSQ", 
+			r2B[k],  v.at(k),leg1, y_axis, 
+			DmSignalMap[mDM[i]].AVd[k], DmSignalMap[mDM[j]].AVd[k]);
+	RatioPlotSignal(stack1, data_v1[k], aux2,
+			"MC 0 #mu BOX", "Data 0 #mu BOX", s+"_DoubleSignalMass_Vu", "RSQ", 
+			r2B[k],  v.at(k),leg2, y_axis, 
+			DmSignalMap[mDM[i]].Vu[k], DmSignalMap[mDM[j]].Vu[k]);
+	RatioPlotSignal(stack1, data_v1[k], aux2,
+			"MC 0 #mu BOX", "Data 0 #mu BOX", s+"_DoubleSignalMass_Vd", "RSQ", 
+			r2B[k],  v.at(k),leg3, y_axis, 
+			DmSignalMap[mDM[i]].Vd[k], DmSignalMap[mDM[j]].Vd[k]);
+	
+	delete leg, leg1, leg2, leg3, aux2;
+      }//end categories loop
+    }//end second mass loop
+  }//end first mass lopp
+  
+  
   return 0;
 }

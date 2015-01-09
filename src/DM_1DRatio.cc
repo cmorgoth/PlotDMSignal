@@ -902,7 +902,6 @@ int RatioPlotsV2(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TStr
 
   TH1F*  RATIO;
   TString label;
-  std::cout << "debug 0" << std::endl;
   if(type == "MR"){
     RATIO = new TH1F("RATIO", fname + "_" + type , BaseDM::MR_Bins, BaseDM::MR_BinArr);
     label = "M_{R}";
@@ -912,15 +911,12 @@ int RatioPlotsV2(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TStr
     RATIO->GetYaxis()->SetRangeUser(.0, 2.0);
     s->SetMaximum(100000.);
   }else if(type == "RSQ" ){
-    std::cout << "debug 1" << std::endl;
     RATIO = new TH1F("RATIO", fname + "_" + type , nbins, bins);
     //RATIO2 = new TH1F("RATIO2", fname + "_" + type , nbins, bins);
     label = "R^{2}";
-    std::cout << "debug 2" << std::endl;
     h1->GetXaxis()->SetRangeUser(0.5, 1.2);
     h2->GetXaxis()->SetRangeUser(0.5, 1.2);
     RATIO->GetXaxis()->SetRangeUser(0.5, 1.2);
-    std::cout << "debug 3" << std::endl;
   }else if(type == "MET"){
     RATIO = new TH1F("RATIO", fname + "_" + type , 50, 0, 1000);
     label = "#slash{E}_{T}  GeV";
@@ -977,7 +973,6 @@ int RatioPlotsV2(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TStr
   pad1->SetLogy();
   C->Update();
   
-  std::cout << "debug 5" << std::endl;
   TLatex *t = new TLatex();
   t->SetNDC();
   t->SetTextAlign(22);
@@ -1029,7 +1024,6 @@ int RatioPlotsV3(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TStr
 
   TH1F*  RATIO;
   TString label;
-  std::cout << "debug 0" << std::endl;
   if(type == "MR"){
     RATIO = new TH1F("RATIO", fname + "_" + type , BaseDM::MR_Bins, BaseDM::MR_BinArr);
     label = "M_{R}";
@@ -1039,15 +1033,12 @@ int RatioPlotsV3(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TStr
     RATIO->GetYaxis()->SetRangeUser(.0, 2.0);
     s->SetMaximum(100000.);
   }else if(type == "RSQ" ){
-    std::cout << "debug 1" << std::endl;
     RATIO = new TH1F("RATIO", fname + "_" + type , nbins, bins);
     //RATIO2 = new TH1F("RATIO2", fname + "_" + type , nbins, bins);
     label = "R^{2}";
-    std::cout << "debug 2" << std::endl;
     h1->GetXaxis()->SetRangeUser(0.5, 1.2);
     h2->GetXaxis()->SetRangeUser(0.5, 1.2);
     RATIO->GetXaxis()->SetRangeUser(0.5, 1.2);
-    std::cout << "debug 3" << std::endl;
   }else if(type == "MET"){
     RATIO = new TH1F("RATIO", fname + "_" + type , 20, 0, 1500);
     label = "#slash{E}_{T}  GeV";
@@ -1065,7 +1056,6 @@ int RatioPlotsV3(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TStr
   
   std::cout << "=====================Dividing Histograms=====================" << std::endl;
   RATIO->Divide(h1, h2, 1, 1, "");
-  std::cout << "debugx" << std::endl;
   RATIO->GetYaxis()->SetRangeUser(.0, 3.05);
   h1->SetMarkerSize(.7);
   h1->SetStats(0);
@@ -1105,7 +1095,6 @@ int RatioPlotsV3(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TStr
   pad1->SetLogy();
   C->Update();
   
-  std::cout << "debug 5" << std::endl;
   TLatex *t = new TLatex();
   t->SetNDC();
   t->SetTextAlign(22);
@@ -1158,7 +1147,6 @@ int RatioPlotSignal(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", T
 
   TH1F*  RATIO;
   TString label;
-  std::cout << "debug 0" << std::endl;
   if(type == "MR"){
     RATIO = new TH1F("RATIO", fname + "_" + type , BaseDM::MR_Bins, BaseDM::MR_BinArr);
     label = "M_{R}";
@@ -1168,15 +1156,12 @@ int RatioPlotSignal(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", T
     RATIO->GetYaxis()->SetRangeUser(.0, 2.0);
     s->SetMaximum(100000.);
   }else if(type == "RSQ" ){
-    std::cout << "debug 1" << std::endl;
     RATIO = new TH1F("RATIO", fname + "_" + type , nbins, bins);
     //RATIO2 = new TH1F("RATIO2", fname + "_" + type , nbins, bins);
     label = "R^{2}";
-    std::cout << "debug 2" << std::endl;
     h1->GetXaxis()->SetRangeUser(0.5, 1.2);
     h2->GetXaxis()->SetRangeUser(0.5, 1.2);
     RATIO->GetXaxis()->SetRangeUser(0.5, 1.2);
-    std::cout << "debug 3" << std::endl;
   }else if(type == "MET"){
     RATIO = new TH1F("RATIO", fname + "_" + type , 20, 0, 1000);
     label = "#slash{E}_{T}  GeV";
@@ -1237,7 +1222,136 @@ int RatioPlotSignal(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", T
   pad1->SetLogy();
   C->Update();
   
-  std::cout << "debug 5" << std::endl;
+  TLatex *t = new TLatex();
+  t->SetNDC();
+  t->SetTextAlign(22);
+  t->SetTextSize(0.03);
+  t->DrawLatex(0.22,0.95,"CMS Preliminary:");
+  t->DrawLatex(0.42,0.95,"#sqrt{s} = 8 TeV,");
+  t->DrawLatex(0.62,0.95,"#int L dt = 18.84 fb^{-1}");
+  
+  TPad *pad2 = new TPad("pad2","pad2",0,0.0,1,0.25);
+  pad2->SetTopMargin(0.008);
+  pad2->SetBottomMargin(0.25);
+  pad2->SetGridy();
+  pad2->Draw();
+  pad2->cd();
+  RATIO->SetLineColor(4);
+  RATIO->SetStats(0);
+  RATIO->SetTitle("");
+  RATIO->GetXaxis()->SetLabelSize(0.1); 
+  RATIO->GetYaxis()->SetLabelSize(0.07);
+  RATIO->GetYaxis()->CenterTitle(1);
+  RATIO->GetXaxis()->CenterTitle(1);
+  RATIO->GetYaxis()->SetTitleOffset(.5);
+  RATIO->GetXaxis()->SetTitleOffset(0.88);
+  RATIO->GetYaxis()->SetTitleSize(0.09);
+  RATIO->GetXaxis()->SetTitleSize(0.11);
+  RATIO->SetXTitle( label );
+  RATIO->SetYTitle("Data/MC");
+  RATIO->SetLineColor(4);
+  RATIO->SetMarkerSize(.7);
+  RATIO->SetMarkerColor(4);
+  RATIO->SetMarkerStyle(20);
+  RATIO->SetFillColor(4);
+  RATIO->Draw();
+  C->cd();
+  C->SaveAs(fname + ".pdf");
+  C->SaveAs(fname + ".png");
+  C->SaveAs(fname + ".C");
+  
+  delete C;
+  delete RATIO;
+
+  return 0;
+
+};
+
+//two signals
+int RatioPlotSignal(THStack* s, TH1F* h1, TH1F* h2, TString h1Name = "h1Name", TString h2Name = "h2Name", TString fname = "default_name", TString type = "defaultType", int nbins = 0, float* bins = NULL, TLegend* le = NULL, TString y_axis = "Events", TH1F* signal1 = NULL, TH1F* signal2 = NULL){
+
+  TCanvas* C = new TCanvas("C", "C      ", 400, 500);
+  C->cd();
+
+  TH1F*  RATIO;
+  TString label;
+  if(type == "MR"){
+    RATIO = new TH1F("RATIO", fname + "_" + type , BaseDM::MR_Bins, BaseDM::MR_BinArr);
+    label = "M_{R}";
+    h1->GetXaxis()->SetRangeUser(200.,3500.);
+    h2->GetXaxis()->SetRangeUser(200.,3500.);
+    RATIO->GetXaxis()->SetRangeUser(200.,3500.);
+    RATIO->GetYaxis()->SetRangeUser(.0, 2.0);
+    s->SetMaximum(100000.);
+  }else if(type == "RSQ" ){
+    RATIO = new TH1F("RATIO", fname + "_" + type , nbins, bins);
+    //RATIO2 = new TH1F("RATIO2", fname + "_" + type , nbins, bins);
+    label = "R^{2}";
+    h1->GetXaxis()->SetRangeUser(0.5, 1.2);
+    h2->GetXaxis()->SetRangeUser(0.5, 1.2);
+    RATIO->GetXaxis()->SetRangeUser(0.5, 1.2);
+  }else if(type == "MET"){
+    RATIO = new TH1F("RATIO", fname + "_" + type , 20, 0, 1000);
+    label = "#slash{E}_{T}  GeV";
+    s->SetMaximum(10000.);
+  }else if(type == "NJETS"){
+    RATIO = new TH1F("RATIO", fname + "_" + type , 9, 1, 10);
+    label = "Jet Multiplicity";
+    s->SetMaximum(100000.);
+  }else{
+    delete RATIO;
+    delete C;
+    std::cout << "Unknown Type, please use: MR or RSQ" << std::endl;
+    return -1;
+  }
+  
+  std::cout << "=====================Dividing Histograms=====================" << std::endl;
+  RATIO->Divide(h1, h2, 1, 1, "");
+  RATIO->GetYaxis()->SetRangeUser(.0, 3.05);
+  h1->SetMarkerSize(.7);
+  h1->SetStats(0);
+  s->SetMinimum(1.);
+  TPad *pad1 = new TPad("pad1","pad1",0,0.25,1,1);
+  pad1->SetBottomMargin(0.0);
+  pad1->Draw();
+  pad1->cd();
+ 
+  if(h1->GetBinContent(nbins) != 0.0 && h1->GetBinContent(1) != 0.0){
+    s->SetMinimum(0.02*h1->GetBinContent(nbins));
+    s->SetMaximum(4*h1->GetBinContent(1));
+  }else if(h1->GetBinContent(1) != 0.0){
+    s->SetMinimum(0.2);
+    s->SetMaximum(6*h1->GetBinContent(1));
+  }else{
+    s->SetMinimum(0.2);
+    s->SetMaximum(5*h1->GetBinContent(h1->GetMaximumBin()));
+  }
+  
+  s->SetTitle("");
+  s->Draw();
+  if(type == "MET"){
+    s->GetYaxis()->SetTitle("Events/20 GeV");
+  }else{
+    s->GetYaxis()->SetTitle(y_axis);
+    s->GetYaxis()->CenterTitle(1);
+  }
+  s->GetYaxis()->SetTitleOffset(1.45);
+  gPad->Modified();
+  h1->SetStats(0);
+  h1->Draw("same");
+  signal1->SetStats(0);
+  signal1->Draw("same");
+  signal2->SetStats(0);
+  signal2->Draw("same");
+  C->cd();
+  
+  le->SetFillColor(0);
+  le->SetBorderSize(0);
+  le->SetTextSize(0.02);
+  le->Draw();
+  pad1->SetLogy();
+  C->Update();
+  
   TLatex *t = new TLatex();
   t->SetNDC();
   t->SetTextAlign(22);
